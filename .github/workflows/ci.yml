@@ -44,7 +44,7 @@ jobs:
         with:
           context: ./frontend
           push: true
-          tags: ${{ vars.DOCKERHUB_USERNAME }}/devboard-frontend-nodjs-main:latest  
+          tags: ${{ vars.DOCKERHUB_USERNAME }}/devboard-frontend-nodjs:latest  
 
 
         
