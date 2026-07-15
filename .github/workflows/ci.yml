@@ -1,6 +1,6 @@
 #by prakash mahajan
-#Goal - I have to lint, build, test the code, for frontned and backend, then push the images no the docker hub
-#TDD - test driven depolyment
+#Goal - I have to lint, build, test the code, for frontend and backend, then push the images on the docker hub
+#TDD - test driven deployment
 
 name: CI
 
@@ -11,7 +11,7 @@ on:
 
 jobs:
   frontend:
-    #Github runner
+    # Github runner
     runs-on: ubuntu-latest
     steps:
       - name: checkout code
@@ -49,45 +49,49 @@ jobs:
           push: true
           tags: ${{ vars.DOCKERHUB_USERNAME }}/devboard-frontend-nodjs:latest
   
-  backend: 
-      # Github runner
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout Code
-              uses: actions/checkout@v7
+  backend:
+    # Github runner
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
 
-            - name: Setup Go
-              uses: actions/setup-go@v6
-              with:
-                go-version: '1.23'
-                go-version-file: 'go.mod'
-                cache-dependency-path: go.sum
-            
-            - name: Run Go Formatter
-              run: go fmt
-              working-directory: backend
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: '1.23'
+          go-version-file: 'go.mod'
+          cache-dependency-path: go.sum
 
-            - name: Run Go Vet
-              run: go vet
-              working-directory: backend
-            
-            - name: Run Tests
-              run: go test 
-              working-directory: backend
-            
-            - name: Docker Setup [Login]
-              uses: docker/login-action@v4
-              with:
-                username: ${{ vars.DOCKERHUB_USERNAME }}
-                password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Run Go Formatter
+        working-directory: backend
+        run: go fmt
 
-            - name: Docker Build and Push
-              uses: docker/build-push-action@v7
-              with:
-                context: ./backend
-                push: true
-                tags: ${{ vars.DOCKERHUB_USERNAME }}/devboard-backend-nodejs:latest
-             
+      - name: Run Go Vet
+        working-directory: backend
+        run: go vet
+
+      - name: Run Tests
+        working-directory: backend
+        run: go test
+
+      - name: Docker Setup [Login]
+        uses: docker/login-action@v4
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Docker Build and Push
+        uses: docker/build-push-action@v7
+        with:
+          context: ./backend
+          push: true
+          tags: ${{ vars.DOCKERHUB_USERNAME }}/devboard-backend-nodejs:latest
+
+  deploy:
+    needs: [frontend, backend]
+    uses: ./.github/workflows/cd.yml
+    secrets: inherit
 
           
 
