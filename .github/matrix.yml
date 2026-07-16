@@ -27,7 +27,7 @@ jobs:
                 cache-dependency-path: go.sum    
 
 
-            - name:  Run Go Formatter
+            - name:  Run Go Formattercd
               run: go fmt
               working-directory: backend
 
