@@ -70,7 +70,9 @@ jobs:
         with:
           context: ./backend
           push: true
-          tags: ${{ vars.DOCKERHUB_USERNAME }}/devboard-backend:latest
+          tags: |
+            ${{ vars.DOCKERHUB_USERNAME }}/devboard-backend:${{ github.sha }}
+            ${{ vars.DOCKERHUB_USERNAME }}/devboard-backend:latest
 
   build-and-push:
     needs: [lint-frontend, lint-backend] 
@@ -93,12 +95,14 @@ jobs:
         with:
           context: ./${{ matrix.folder }}
           push: true
-          tags: ${{ vars.DOCKERHUB_USERNAME }}/devboard-${{ matrix.folder }}:latest
+          tags: |
+            ${{ vars.DOCKERHUB_USERNAME }}/devboard-${{ matrix.folder }}:${{ github.sha }}
+            ${{ vars.DOCKERHUB_USERNAME }}/devboard-${{ matrix.folder }}:latest
 
   deploy:
     needs: [lint-frontend, lint-backend, build-and-push]
     uses: ./.github/workflows/cd.yml
     with:
-      IMAGE_TAG: ${{ github.sha }}
+      IMAGE_TAG: latest
       DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
     secrets: inherit
