@@ -98,4 +98,7 @@ jobs:
   deploy:
     needs: [lint-frontend, lint-backend, build-and-push]
     uses: ./.github/workflows/cd.yml
+    with:
+      IMAGE_TAG: ${{ github.sha }}
+      DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
     secrets: inherit
