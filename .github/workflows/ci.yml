@@ -7,7 +7,12 @@ name: CI
 on:
 
   push:
+    paths:
+      - '**'
+      - '!.github/workflows/**'
     branches: [advanced]
+
+
 
 jobs:
   frontend:
