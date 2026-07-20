@@ -1,1 +1,25 @@
 #Goal - ensure the docker files and docker images are security tested.
+
+name: Docker scan 
+
+on:
+    workflow_call
+
+jobs: 
+    docke-file-lint-and-scan:
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                folder: [frontend, backend]
+        steps:
+            - name: checkout code
+              uses: actions/checkout@v7
+
+            - name: ${{ matrix.folders}} Dockerfile lint
+              uses: hadolint/hadolint-action@v3.1.0
+              with:   
+                dockerfile: ${{ matrix.folders}}/Dockerfile
+                
+                 
+ 

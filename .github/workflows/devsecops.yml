@@ -18,4 +18,8 @@ jobs:
     #Dependency Scanning stage
     dependency-scan:
         uses: ./.github/workflows/dependency-scan.yml
-            
+
+    #Dcoker check
+     docker-checks:
+        uses: ./.github/workflows/docker-scan.yml   
+
