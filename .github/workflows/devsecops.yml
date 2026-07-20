@@ -20,6 +20,6 @@ jobs:
         uses: ./.github/workflows/dependency-scan.yml
 
     #Dcoker check
-     docker-checks:
+    docker-checks:
         uses: ./.github/workflows/docker-scan.yml   
 
