@@ -11,4 +11,7 @@ jobs:
     code-quality:
          uses: ./.github/workflows/code-quality.yml
 
+    #Secret Scanning stage
+    secret-scanning:
+        uses: ./.github/workflows/secret-scanning.yml
         
