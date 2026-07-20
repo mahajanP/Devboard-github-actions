@@ -3,7 +3,8 @@
 name: CD
 
 on:
-  workflow_call:
+  #workflow_call:
+   workflow_dispatch:
     inputs:
       IMAGE_TAG:
         required: true

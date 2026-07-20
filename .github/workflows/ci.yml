@@ -2,12 +2,13 @@
 # then Push the images to DockerHub 
 name: CI
 
-on:
-  push:
+on: 
+  #push:
+   workflow_dispatch: 
     branches: [advanced]
 
 jobs:
-  lint-frontend:
+  frontend:
     # Github runner
     runs-on: ubuntu-latest
     steps:
@@ -30,10 +31,28 @@ jobs:
         working-directory: frontend
 
       - name: Run Tests
-        run: npm run test
+        run: npm run test 
         working-directory: frontend
+      - name: Code Quality
+        uses: ./github/workflows/code-quality.yml
 
-  lint-backend:
+      
+      - name: Docker Setup [Login]
+        uses: docker/login-action@v4
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Docker Build and Push
+        uses: docker/build-push-action@v7
+        with:
+          context: ./frontend
+          push: true
+          tags: |
+            ${{ vars.DOCKERHUB_USERNAME }}/devboard-frontend:${{ github.sha }}
+            ${{ vars.DOCKERHUB_USERNAME }}/devboard-frontend:latest
+        
+  backend:
     # Github runner
     runs-on: ubuntu-latest
     steps:
@@ -56,7 +75,7 @@ jobs:
         working-directory: backend
       
       - name: Run Tests
-        run: go test
+        run: go test 
         working-directory: backend
       
       - name: Docker Setup [Login]
@@ -74,35 +93,9 @@ jobs:
             ${{ vars.DOCKERHUB_USERNAME }}/devboard-backend:${{ github.sha }}
             ${{ vars.DOCKERHUB_USERNAME }}/devboard-backend:latest
 
-  build-and-push:
-    needs: [lint-frontend, lint-backend] 
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        folder: [frontend,backend]
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v7
-
-      - name: Docker Setup [Login]
-        uses: docker/login-action@v4
-        with:
-          username: ${{ vars.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Docker Build and Push
-        uses: docker/build-push-action@v7
-        with:
-          context: ./${{ matrix.folder }}
-          push: true
-          tags: |
-            ${{ vars.DOCKERHUB_USERNAME }}/devboard-${{ matrix.folder }}:${{ github.sha }}
-            ${{ vars.DOCKERHUB_USERNAME }}/devboard-${{ matrix.folder }}:latest
-
   deploy:
-    needs: [lint-frontend, lint-backend, build-and-push]
+    needs: [frontend,backend]
     uses: ./.github/workflows/cd.yml
     with:
-      IMAGE_TAG: latest
-      DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
+      IMAGE_TAG: ${{ github.sha }}
     secrets: inherit
