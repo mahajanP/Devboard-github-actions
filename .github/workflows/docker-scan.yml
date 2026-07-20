@@ -11,15 +11,15 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                folder: [frontend, backend]
+                folders: ['backend', 'frontend']
         steps:
-            - name: checkout code
+            - name: Code Checkout
               uses: actions/checkout@v7
 
             - name: ${{ matrix.folders}} Dockerfile lint
               uses: hadolint/hadolint-action@v3.1.0
               with:   
                 dockerfile: ${{ matrix.folders}}/Dockerfile
-                
+
                  
  
