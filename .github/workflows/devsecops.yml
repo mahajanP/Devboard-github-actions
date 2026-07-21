@@ -21,5 +21,8 @@ jobs:
 
     #Dcoker check
     docker-checks:
-        uses: ./.github/workflows/docker-scan.yml   
+        uses: ./.github/workflows/docker-scan.yml 
+        secrets: inherit #pass any secrets from the calling workflow to the called wrokflow 
+        
 
+ 
