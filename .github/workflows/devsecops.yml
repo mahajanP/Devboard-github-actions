@@ -23,6 +23,8 @@ jobs:
     docker-checks:
         uses: ./.github/workflows/docker-scan.yml 
         secrets: inherit #pass any secrets from the calling workflow to the called wrokflow 
-        
 
- 
+    #SonarQube 
+    sonar_qube:
+      uses: ./.github/workflows/sonar-scan.yml     
+      secrets: inherit
