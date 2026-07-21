@@ -10,7 +10,7 @@ WORKDIR /app
 COPY . .
 
 # step 4 install the required dependencies
-RUN npm install --legacy-peer-deps --verbose
+RUN npm install --legacy-peer-deps
 
 # step 5 expose the port number for documentation purposes
 EXPOSE 5173
