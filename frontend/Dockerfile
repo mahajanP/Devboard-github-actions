@@ -13,7 +13,6 @@ COPY . .
 RUN npm install --legacy-peer-deps
 
 # step 5 expose the port number for documentation purposes
-EXPOSE 5173
-
+EXPOSE 51
 # step 6 run the application
 CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "5173"]
