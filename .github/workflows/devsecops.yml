@@ -39,8 +39,8 @@ jobs:
         needs: [code-quality,secret-scanning,dependency-scan,docker-checks,sonar_qube,code-tests]
         secrets: inherit
 
-        # -------CD------\
+        # ------- CD --------
     deploy:
         needs: [docker-push]
-        uses: ./.github/workflows/cd.yml
+        uses: ./.github/workflows/deploy.yml
         secrets: inherit     
