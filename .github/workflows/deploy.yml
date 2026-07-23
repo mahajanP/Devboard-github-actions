@@ -1,4 +1,5 @@
 # Goal: To deploy the built images from CI Steps once the CI Worklow is Succeeded
+# cd name change to deploy
 
 name: CD
 
