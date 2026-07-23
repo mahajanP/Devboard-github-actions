@@ -26,9 +26,9 @@ jobs:
         secrets: inherit #pass any secrets from the calling workflow to the called wrokflow 
 
     #SonarQube 
-    #sonar_qube:
-     # uses: ./.github/workflows/sonar-scan.yml     
-      #secrets: inherit
+    sonar_qube:
+      uses: ./.github/workflows/sonar-scan.yml     
+      secrets: inherit
 
     #code Test
     code-tests:
@@ -37,9 +37,8 @@ jobs:
     #push-to-docker-hub:
     docker-push:
         uses: ./.github/workflows/docker-push.yml
-        needs: [code-quality,secret-scanning,dependency-scan,docker-checks,code-tests]
+        needs: [code-quality,secret-scanning,dependency-scan,docker-checks,code-tests,sonar_qube]
         secrets: inherit
-
     # ------- CD --------
     deploy:
         uses: ./.github/workflows/cd.yml
