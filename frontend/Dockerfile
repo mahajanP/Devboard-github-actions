@@ -1,18 +1,27 @@
-FROM node:22-alpine AS builder
+#Frontend UI
+#  Created by Prakash Mahajan
+# Build stage
+FROM dhi.io/node:22-alpine3.24-dev AS builder
 
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm ci --legacy-peer-deps
+
+RUN npm install --legacy-peer-deps
 
 COPY . .
-RUN npm run build
 
-FROM node:22-alpine
+# Production stage
+FROM dhi.io/node:22-alpine3.24
 
 WORKDIR /app
 
-COPY --from=builder /app .
+COPY --from=builder --chown=node:node /app/node_modules ./node_modules
+COPY --from=builder --chown=node:node /app/package*.json ./
+COPY --chown=node:node . .
+
+USER node
+
 EXPOSE 5173
 
 CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "5173"]
