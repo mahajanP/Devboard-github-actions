@@ -1,6 +1,6 @@
 # Goal - I have to Lint, Build, Test the code for Frontend & Backend
 # then Push the images to DockerHub
-#devcops gole push the image to dockerhub
+# devcops gole push the image to dockerhub
 
 name: Docker push 
 
