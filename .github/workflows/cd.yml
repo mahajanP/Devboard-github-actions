@@ -4,22 +4,15 @@
 name: CD
 
 on:
-   workflow_call:
-   
-    inputs:
-      IMAGE_TAG:
-        required: true
-        type: string
-      DOCKERHUB_USERNAME:
-        required: false
-        type: string
+  workflow_call:
 
 jobs:
   deploy:
     runs-on: self-hosted
+
     steps:
       - name: Code Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
 
       - name: Copy Example Env to main env
         run: cp .env.example .env
@@ -33,7 +26,7 @@ jobs:
       - name: Deploy the containers with Docker Compose
         env:
           IMAGE_TAG: ${{ inputs.IMAGE_TAG }}
-          DOCKERHUB_USERNAME: ${{ inputs.DOCKERHUB_USERNAME || vars.DOCKERHUB_USERNAME }}
+          DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
         run: |
           docker compose pull
           docker compose up -d --no-build
