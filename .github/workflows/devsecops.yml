@@ -40,7 +40,7 @@ jobs:
         secrets: inherit
 
     # ------- CD --------
-    #deploy:
-     #   needs: [docker-push]
-     #   uses: ./.github/workflows/cd.yml
-     #   secrets: inherit     
+    deploy:
+        needs: [sonar_qube,docker-push]
+        uses: ./.github/workflows/cd.yml
+        secrets: inherit     
