@@ -1,6 +1,6 @@
 # By Prakash Mahajan
 # step 1 bring the base image
-FROM node:24
+FROM dhi.io/node:22-alpine3.24-dev AS builder
 
 # step 2 create a folder where code can stay
 WORKDIR /app
