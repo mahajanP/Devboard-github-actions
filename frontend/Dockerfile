@@ -1,27 +1,18 @@
-#Frontend UI
-#  Created by Prakash Mahajan
-# Build stage
-FROM dhi.io/node:22-alpine3.24-dev AS builder
+# By Prakash Mahajan
+# step 1 bring the base image
+FROM node:24
 
+# step 2 create a folder where code can stay
 WORKDIR /app
 
-COPY package*.json ./
-
-RUN npm install --legacy-peer-deps
-
+# step 3 copy the code from host machine to the container
 COPY . .
 
-# Production stage
-FROM dhi.io/node:22-alpine3.24
+# step 4 install the required dependencies
+RUN npm install  --legacy-peer-deps
 
-WORKDIR /app
-
-COPY --from=builder --chown=node:node /app/node_modules ./node_modules
-COPY --from=builder --chown=node:node /app/package*.json ./
-COPY --chown=node:node . .
-
-USER node
-
+# step 5 expose the port number for documentation purposes
 EXPOSE 5173
 
+# step 6 run the application
 CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "5173"]
