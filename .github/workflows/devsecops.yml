@@ -38,6 +38,8 @@ jobs:
     docker-push:
         uses: ./.github/workflows/docker-push.yml
         needs: [code-quality,secret-scanning,dependency-scan,docker-checks,code-tests,sonar_qube]
+        with:
+            IMAGE_TAG: ${{ github.sha }}
         secrets: inherit
     # ------- CD --------
     deploy:

@@ -229,14 +229,14 @@ The browser calls these as `/api/...`; the backend serves them at the root.
 
 ## CI/CD DevSecOps Setup
 
-The repository contains GitHub Actions workflows configured with SonarQube (SAST) and OWASP ZAP (DAST) scanning.
+This repository includes GitHub Actions workflows for CI/CD and DevSecOps, including SonarQube for SAST and OWASP ZAP for DAST.
 
-### How to Install and Set Up SonarQube on EC2
+### How to install and set up SonarQube on EC2
 
 To run your own self-hosted SonarQube server on your AWS EC2 instance:
 
 1. **Start the SonarQube Container**:
-   Ensure Docker is installed on your EC2 instance, then run:
+   Make sure Docker is installed on your EC2 instance, then run:
    ```bash
    docker run -itd --name SonarQube-Server -p 9000:9000 sonarqube:community
    ```
@@ -244,7 +244,7 @@ To run your own self-hosted SonarQube server on your AWS EC2 instance:
 2. **Access the Web Interface**:
    - Make sure port `9000` is open in your **AWS EC2 Security Group** inbound rules.
    - Access `http://<YOUR_EC2_PUBLIC_IP>:9000` in your browser.
-   - Log in using default credentials: Username: `admin` / Password: `admin` (you will be prompted to change it)
+   - Log in with the default credentials: username `admin` and password `admin`. You will be prompted to change the password after the first login.
 
 
 ### How to configure SonarQube Secrets
@@ -265,7 +265,7 @@ To enable SonarQube scanning in your GitHub Actions pipeline:
      - `SONAR_TOKEN`: Paste the SonarQube token you copied.
      - `SONAR_HOST_URL`: Paste your SonarQube server URL.
 
-### How to configure Docker Hub Credentials
+### How to configure Docker Hub credentials
 
 To allow the CI pipeline to build and push images to Docker Hub:
 1. Navigate to **Settings > Secrets and variables > Actions**.
@@ -274,7 +274,7 @@ To allow the CI pipeline to build and push images to Docker Hub:
 3. Under the **Secrets** tab, add:
    - `DOCKERHUB_TOKEN`: A Personal Access Token (PAT) generated from Docker Hub.
 
-### How to configure AWS EC2 Deployment Secrets
+### How to configure AWS EC2 deployment secrets
 
 To run the CD deployment on AWS EC2, add the following secrets under **Settings > Secrets and variables > Actions**:
 - `EC2_HOST`: The public IP address or DNS name of your EC2 instance.
@@ -282,3 +282,109 @@ To run the CD deployment on AWS EC2, add the following secrets under **Settings 
 - `EC2_SSH_KEY`: The contents of your private SSH key file (`.pem` file) used to authenticate with the EC2 instance.
 - `EC2_TARGET_DIR` (Optional): The directory path on your EC2 instance where the repository is cloned and Docker Compose runs (defaults to `/home/ubuntu/devboard`).
 
+### DevSecOps workflow used in this project
+
+This repository includes a reusable GitHub Actions-based DevSecOps pipeline for the `advanced` branch. The main entry workflow is `.github/workflows/devsecops.yml`, and it orchestrates quality checks, security scanning, container publishing, and deployment in sequence.
+
+Current workflow order:
+
+1. `code-quality.yml` - runs source quality checks.
+2. `secret-scanning.yml` - checks the repository for exposed secrets.
+3. `dependency-scan.yml` - scans dependencies for known vulnerabilities.
+4. `docker-scan.yml` - validates container-related checks.
+5. `sonar-scan.yml` - performs SonarQube static analysis.
+6. `code-test.yml` - runs frontend and backend tests.
+7. `docker-push.yml` - builds and pushes Docker images to Docker Hub.
+8. `cd.yml` - pulls the pushed images and deploys them with Docker Compose on the self-hosted runner.
+
+### Branch trigger
+
+The end-to-end pipeline runs when code is pushed to:
+
+```bash
+advanced
+```
+
+If you want the same DevSecOps flow for another branch, update `.github/workflows/devsecops.yml`.
+
+### Docker image flow
+
+The pipeline publishes two images:
+
+- `DOCKERHUB_USERNAME/devboard-backend:<git-sha>`
+- `DOCKERHUB_USERNAME/devboard-frontend:<git-sha>`
+
+It also updates the `latest` tag for both images. The deploy workflow then uses the same Git SHA tag so the running environment matches the exact build produced by CI.
+
+### Deployment behavior
+
+The deployment step uses:
+
+```bash
+docker compose pull
+docker compose up -d --no-build
+```
+
+That means:
+
+- CI is responsible for building and pushing images.
+- CD only pulls ready-made images from Docker Hub.
+- The self-hosted deployment machine must already have Docker and Docker Compose installed.
+- The deployment machine must also have access to the repository and be registered to run the GitHub Actions self-hosted runner.
+
+### Self-hosted runner notes
+
+The `cd.yml` workflow runs on:
+
+```bash
+self-hosted
+```
+
+So your deployment server must:
+
+- be registered as a GitHub Actions self-hosted runner
+- have Docker Engine and Docker Compose available
+- have permission to pull Docker Hub images
+- contain the project files required by `docker-compose.yml`, `.env.example`, and the Compose startup process
+
+### Test coverage in the pipeline
+
+The current `code-test.yml` workflow runs:
+
+- frontend dependency installation with `npm ci`
+- frontend test execution with `npm test`
+- backend test execution with `go test ./...`
+
+This helps ensure both application layers are validated before Docker images are published.
+
+### Recommended repository configuration
+
+For a stable DevSecOps setup, configure these GitHub repository values:
+
+- Repository Variable: `DOCKERHUB_USERNAME`
+- Repository Secret: `DOCKERHUB_TOKEN`
+- Repository Secret: `SONAR_TOKEN`
+- Repository Secret: `SONAR_HOST_URL`
+
+If deployment is handled through a self-hosted runner already attached to the target machine, the EC2 SSH secrets listed above may be optional for this specific workflow design.
+
+### Typical release flow
+
+A normal release from this repository now looks like this:
+
+1. Push changes to the `advanced` branch.
+2. GitHub Actions runs quality, security, and test jobs.
+3. Docker images are built and pushed to Docker Hub.
+4. The deploy workflow pulls the new images on the self-hosted runner.
+5. Docker Compose restarts the application with the new image versions.
+
+### Troubleshooting notes
+
+If the CI pipeline passes but deployment fails, check these first:
+
+- Docker Hub credentials are present and valid in GitHub Actions.
+- The self-hosted runner is online.
+- The runner machine can execute `docker compose`.
+- The `.env` file is created successfully from `.env.example`.
+- The image tag passed from `docker-push.yml` to `cd.yml` matches an image that exists in Docker Hub.
+- The frontend and backend containers expose the same ports expected by `docker-compose.yml`.

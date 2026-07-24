@@ -1,28 +1,26 @@
-# Goal - I have to Lint, Build, Test the code for Frontend & Backend
-# then Push the images to DockerHub
-# devcops gole push the image to dockerhub
+# Goal: build and push the backend and frontend images to Docker Hub.
 
-name: Docker push 
+name: Docker Push
 
-on: 
-  #push:
-   workflow_call:
-
+on:
+  workflow_call:
+    inputs:
+      IMAGE_TAG:
+        required: false
+        type: string
 
 jobs:
-  frontend:
-    # Github runner
+  push-images:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-             folders: ['backend', 'frontend']
-        
+        folder: ['backend', 'frontend']
+
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
 
-      
       - name: Docker Setup [Login]
         uses: docker/login-action@v4
         with:
@@ -32,14 +30,9 @@ jobs:
       - name: Docker Build and Push
         uses: docker/build-push-action@v7
         with:
-          context: ./${{ matrix.folders}}
+          context: ./${{ matrix.folder }}
           push: true
           tags: |
-            ${{ vars.DOCKERHUB_USERNAME }}/devboard-${{matrix.folders}}:${{ github.sha }}
-            ${{ vars.DOCKERHUB_USERNAME }}/devboard-${{matrix.folders}}:latest
-        
-  
-
-      
-          
+            ${{ vars.DOCKERHUB_USERNAME }}/devboard-${{ matrix.folder }}:${{ inputs.IMAGE_TAG || github.sha }}
+            ${{ vars.DOCKERHUB_USERNAME }}/devboard-${{ matrix.folder }}:latest
  
